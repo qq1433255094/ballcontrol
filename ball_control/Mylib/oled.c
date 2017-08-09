@@ -22,7 +22,7 @@
 #define LCD_SDA_1  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_SET) //D1
 #define LCD_SDA_0  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_RESET)
 
-extern uint32_t camera_buffer[120][160];
+extern uint32_t camera_buffer[240][10];
 
 const unsigned char F8X16[]=
 {
@@ -735,7 +735,8 @@ unsigned char show_block3(int8_t x, int8_t y, int8_t x_now, int8_t line)
 void oled_camera_display()
 {
 	uint16_t i, j, shift;
-	unsigned char y, x, data=0;
+	unsigned char y, x;
+	uint8_t data = 0;
 	//unsigned char disp[8][128];
 
 	//for (i = 0; i < 80; i++) {
@@ -755,27 +756,18 @@ void oled_camera_display()
 	//		data[j]=15*(sin(j*12.0/180.0*3.14159)+1);
 	//	}
 
-	for (y = 0; y < 7; y++)
+	for (y = 0; y < 8; y++)
 	{
 		LCD_WrCmd(0xb0 + y);
 		LCD_WrCmd(((0 & 0xf0) >> 4) | 0x10);
 		LCD_WrCmd(0 & 0x0f);
-		for (x = 0; x < 80; x++)
+		for (x = 0; x < 48; x++)
 		{
 			i = y * 16;
 			j = x * 1;
-			data = 0;
-			for (shift = 0; shift < 8; shift++)
-			{
-				uint8_t pix;
-				if ((uint8_t)camera_buffer[i + shift * 2][j] > 127)
-					pix = 1;
-				else
-					pix = 0;
-				data |= (pix << shift);
-
-			}
-			LCD_WrDat(data);
+			data = (uint8_t)camera_buffer[x*5][7-y];
+			//data = __RBIT(data);
+			LCD_WrDat(~data);
 		}
 	}
 	

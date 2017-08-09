@@ -38,7 +38,7 @@
 I2C_HandleTypeDef  camera_I2c;
 static DCMI_HandleTypeDef hdcmi_camera;
 uint8_t test_val = 0;
-uint32_t camera_buffer[120][160];
+uint32_t camera_buffer[60][10];
 
 void CAMERA_I2C_Init();
 void CAMERA_I2C_MspInit();
@@ -247,7 +247,7 @@ static const uint8_t ov7725_eagle_reg_one[OV7725_REG_NUM][2] =
 	0xC1	0x00	==> 150帧
 	*/
 	//寄存器，寄存器值次
-	{ OV7725_COM4         , 0xC1 },		//150帧
+	{ OV7725_COM4         , 0x02 },		//150帧
 	{ OV7725_CLKRC        , 0x00 },
 	{ OV7725_COM2         , 0x03 },
 	{ OV7725_COM3         , 0xD0 },
@@ -794,7 +794,7 @@ static void DCMI_MspInit(void)
 	hdma.Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
 	hdma.Init.Mode = DMA_CIRCULAR;
 	hdma.Init.Priority = DMA_PRIORITY_HIGH;
-	hdma.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+	hdma.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 	hdma.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
 	hdma.Init.MemBurst = DMA_MBURST_SINGLE;
 	hdma.Init.PeriphBurst = DMA_PBURST_SINGLE;
@@ -826,7 +826,7 @@ void Cam_Init() {
 	/*** Configures the DCMI to interface with the Camera module ***/
 	/* DCMI configuration */
 	phdcmi->Init.CaptureRate = DCMI_CR_ALL_FRAME;
-	phdcmi->Init.HSPolarity = DCMI_HSPOLARITY_HIGH;
+	phdcmi->Init.HSPolarity = DCMI_HSPOLARITY_LOW;
 	phdcmi->Init.SynchroMode = DCMI_SYNCHRO_HARDWARE;
 	phdcmi->Init.VSPolarity = DCMI_VSPOLARITY_HIGH;
 	phdcmi->Init.ExtendedDataMode = DCMI_EXTEND_DATA_8B;
@@ -841,7 +841,7 @@ void Cam_Init() {
 void BSP_CAMERA_ContinuousStart(uint32_t *buff)
 {
 	/* Start the Camera capture */
-	HAL_DCMI_Start_DMA(&hdcmi_camera, DCMI_MODE_CONTINUOUS, (uint32_t)buff, 120*160);
+	HAL_DCMI_Start_DMA(&hdcmi_camera, DCMI_MODE_CONTINUOUS, (uint32_t)buff, 10*60);
 }
 
 void BSP_CAMERA_SnapshotStart(uint8_t *buff)
@@ -880,8 +880,8 @@ void CAMERA_I2C_test()
 	OV7725_Init();
 	//SCCB_Init();
 	test_val = OV_ReadID();
-	//HAL_Delay(1);
-	//BSP_CAMERA_ContinuousStart(&camera_buffer[0][0]);
+	HAL_Delay(1);
+	BSP_CAMERA_ContinuousStart(&camera_buffer[0][0]);
 	//HAL_Delay(1000);
 	//BSP_CAMERA_Suspend();
 }

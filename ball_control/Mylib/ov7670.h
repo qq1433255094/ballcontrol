@@ -160,13 +160,7 @@ extern "C" {
 #define OV7725_SIGN      0xAB
 #define OV7725_DSPAuto   0xAC
 
-	//配置摄像头的特性
-#define CAMERA_USE_HREF     0               //是否使用 行中断 (0 为 不使用，1为使用)
-#define CAMERA_COLOR        0               //摄像头输出颜色 ， 0 为 黑白二值化图像 ，1 为 灰度 图像 ，2 为 RGB565 图像
-#define CAMERA_POWER        0               //摄像头 电源选择， 0 为 3.3V ,1 为 5V
 
-	//配置 摄像头 参数
-#define CAMERA_DMA_CH       DMA_CH0         //定义摄像头的DMA采集通道
 #define CAMERA_W            80              //定义摄像头图像宽度,列
 #define CAMERA_H            60              //定义摄像头图像高度,行
 #define CAMERA_SIZE         (CAMERA_W * CAMERA_H / 8)           //图像占用空间大小
