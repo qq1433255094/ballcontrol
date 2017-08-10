@@ -1,7 +1,7 @@
 #include "os_task.h"
 
 extern UART_HandleTypeDef huart4;
-extern camera_buffer[120][160];
+
 int Frame;
 #pragma region ALL_DEFINE
 
@@ -21,7 +21,8 @@ void os_task_start(void)
 	osKernelStart();
 }
 
-
+uint16_t test_pwm=3000;
+extern int pg, hg, vg;
 os_exec(TEST) {
 	(void)argument;
 	int8_t tick = 0;
@@ -31,6 +32,15 @@ os_exec(TEST) {
 		GREED_LED_TOGGLE();
 		//if(Frame%4 == 0)
 			oled_camera_display();
-		osDelay(2);
+		OLED_PrintN(64, 0, "ok", 0);
+		OLED_PrintN(64, 2, "p ", pg);
+		OLED_PrintN(64, 4, "h ", hg);
+		OLED_PrintN(64, 6, "v ", vg);
+
+			set_pwm_val(TIM_CHANNEL_2,test_pwm);
+			test_pwm+=100;
+			if (test_pwm == 9000)
+				test_pwm = 3000;
+		osDelay(50);
 	}
 }

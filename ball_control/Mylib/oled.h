@@ -13,8 +13,9 @@
 #define LCD_DC_PIN  GPIO_PIN_1
 #define LCD_SCL_PIN GPIO_PIN_2
 #define LCD_SDA_PIN GPIO_PIN_3
-#define LCD_GPIO    GPIOC
-	
+#define LCD_GPIO    GPIOD
+#define __LCD_GPIO_CLK_ENABLE() __GPIOD_CLK_ENABLE()
+
 void OLED_Configuration(void);  
 void OLED_Print(unsigned char x, unsigned char y, char ch[]);
 void OLED_Printf(unsigned char x,unsigned char y,const char *fmt,...);

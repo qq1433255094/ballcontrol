@@ -38,7 +38,7 @@
 I2C_HandleTypeDef  camera_I2c;
 static DCMI_HandleTypeDef hdcmi_camera;
 uint8_t test_val = 0;
-uint32_t camera_buffer[60][10];
+CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 
 void CAMERA_I2C_Init();
 void CAMERA_I2C_MspInit();
@@ -247,8 +247,8 @@ static const uint8_t ov7725_eagle_reg_one[OV7725_REG_NUM][2] =
 	0xC1	0x00	==> 150帧
 	*/
 	//寄存器，寄存器值次
-	{ OV7725_COM4         , 0x02 },		//150帧
-	{ OV7725_CLKRC        , 0x00 },
+	{ OV7725_COM4         , 0xc1 },		//150帧
+	{ OV7725_CLKRC        , 0x02 },
 	{ OV7725_COM2         , 0x03 },
 	{ OV7725_COM3         , 0xD0 },
 	{ OV7725_COM7         , 0x40 },
@@ -731,7 +731,7 @@ uint8_t OV7670_Init(void)
 uint8_t OV7725_Init(void)
 {
 	uint8_t i;
-	Cam_Init();
+	//Cam_Init();
 	SCCB_Init();
 	OV_Reset();
 
@@ -841,7 +841,7 @@ void Cam_Init() {
 void BSP_CAMERA_ContinuousStart(uint32_t *buff)
 {
 	/* Start the Camera capture */
-	HAL_DCMI_Start_DMA(&hdcmi_camera, DCMI_MODE_CONTINUOUS, (uint32_t)buff, 10*60);
+	HAL_DCMI_Start_DMA(&hdcmi_camera, DCMI_MODE_CONTINUOUS, (uint32_t)buff, 10*240);
 }
 
 void BSP_CAMERA_SnapshotStart(uint8_t *buff)
@@ -875,13 +875,48 @@ void CAMERA_I2C_test()
 	//CAMERA_I2C_Write(0x12, 0x80);
 	/*test_val = CAMERA_I2C_Read(0x0a);*/
 
+	GPIO_InitTypeDef GPIO_Init_Structure;
+
+	__GPIOA_CLK_ENABLE();
+	__GPIOC_CLK_ENABLE();
+
+	/*** Configure the GPIO ***/
+	/* Configure DCMI GPIO as alternate function */
+	GPIO_Init_Structure.Pin = GPIO_PIN_3 | GPIO_PIN_4;
+	GPIO_Init_Structure.Mode = GPIO_MODE_IT_RISING;
+	GPIO_Init_Structure.Pull = GPIO_PULLDOWN;
+	GPIO_Init_Structure.Speed = GPIO_SPEED_MEDIUM;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init_Structure);
+
+	GPIO_Init_Structure.Pin = GPIO_PIN_2 ;
+	GPIO_Init_Structure.Mode = GPIO_MODE_IT_RISING;
+	GPIO_Init_Structure.Pull = GPIO_PULLDOWN;
+	GPIO_Init_Structure.Speed = GPIO_SPEED_MEDIUM;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init_Structure);
+
+	GPIO_Init_Structure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
+	GPIO_Init_Structure.Pull = GPIO_PULLDOWN;
+	GPIO_Init_Structure.Speed = GPIO_SPEED_MEDIUM;
+	HAL_GPIO_Init(GPIOC, &GPIO_Init_Structure);
+
+	HAL_NVIC_SetPriority(EXTI2_IRQn, 0x02, 0);	//设置中断优先级 0x00最高 0x0f最低
+	HAL_NVIC_SetPriority(EXTI3_IRQn, 0x02, 0);	//设置中断优先级 0x00最高 0x0f最低
+	HAL_NVIC_SetPriority(EXTI4_IRQn, 0x02, 0);	//设置中断优先级 0x00最高 0x0f最低
+				//开启中断
+	
 	
 	test_val = 1;
 	OV7725_Init();
 	//SCCB_Init();
-	test_val = OV_ReadID();
-	HAL_Delay(1);
-	BSP_CAMERA_ContinuousStart(&camera_buffer[0][0]);
+	
+	HAL_Delay(10);
+	
+	HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+	//BSP_CAMERA_ContinuousStart(&camera_buffer[0][0]);
 	//HAL_Delay(1000);
 	//BSP_CAMERA_Suspend();
 }
@@ -930,3 +965,71 @@ void DCMI_IRQHandler(void)
 {
 	BSP_CAMERA_IRQHandler();
 }
+
+void EXTI2_IRQHandler()
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
+void EXTI3_IRQHandler()
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+}
+
+void EXTI4_IRQHandler()
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+}
+
+int p = 0, h = 0, v = 0;
+int pg = 0, hg = 0, vg = 0;
+void pix_handler()
+{
+	if (p > 39 || h > 239)
+	{
+		return;
+	}
+	if (p > 4 || p < 35)
+	{
+		camera_buffer[h - 1][p-5] = GPIOC->IDR & 0x00ff;
+	}
+	p++;
+}
+
+void hs_handler()
+{
+	pg = p;
+	p = 0;
+	h++;
+}
+uint32_t time;
+
+void vs_handler()
+{
+	hg = h;
+	h = 0;
+	p = 0;
+	v++;
+	if (HAL_GetTick() -time >= 1000)
+	{
+		time = HAL_GetTick();
+		vg = v;
+		v = 0;
+	}
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == GPIO_PIN_2)
+	{
+		pix_handler();
+	}else if (GPIO_Pin == GPIO_PIN_3)
+	{
+		hs_handler();
+	}
+	else if (GPIO_Pin == GPIO_PIN_4)
+	{
+		vs_handler();
+	}
+}
+

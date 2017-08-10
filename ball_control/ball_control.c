@@ -64,10 +64,12 @@ int main(void)
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStructure);
 	BLUE_LED_OFF();
 	GREED_LED_OFF();
-	HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
-	CAMERA_I2C_test();
-	uart4_init();
+	//HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
 	OLED_Configuration();
+	CAMERA_I2C_test();
+	//uart4_init();
+	
+	//pwm_init();
 	os_task_init();
 	os_task_start();
 	  /* We should never get here as control is now taken by the scheduler */

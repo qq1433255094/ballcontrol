@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "can2.h"
 #include "usart3.h"
+#include "ov7670.h"
 
 #define LCD_RST_1  HAL_GPIO_WritePin(LCD_GPIO,LCD_RST_PIN,GPIO_PIN_SET)
 #define LCD_RST_0  HAL_GPIO_WritePin(LCD_GPIO,LCD_RST_PIN,GPIO_PIN_RESET)
@@ -22,7 +23,7 @@
 #define LCD_SDA_1  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_SET) //D1
 #define LCD_SDA_0  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_RESET)
 
-extern uint32_t camera_buffer[240][10];
+extern CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 
 const unsigned char F8X16[]=
 {
@@ -139,13 +140,13 @@ void oled_delay_ms(unsigned int t)
 
 void oled_delay_us(unsigned int t)
 {
-	//int i=0;
-	//for( i=0;i<t;i++)
-	//{
-	//	int a=100;
-	////	int a=0;
-	//	while(a--);
-	//}
+	int i=0;
+	for( i=0;i<t;i++)
+	{
+		int a=40;
+	//	int a=0;
+		while(a--);
+	}
 	////i++;
 }
 
@@ -470,11 +471,11 @@ void OLED_Configuration(void)
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	/* GPIO Ports Clock Enable */
-	__GPIOE_CLK_ENABLE();
+	__LCD_GPIO_CLK_ENABLE();
 
 	GPIO_InitStruct.Pin   = LCD_RST_PIN | LCD_DC_PIN | LCD_SCL_PIN | LCD_SDA_PIN;
-	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull  = GPIO_NOPULL;
+	GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_OD;
+	GPIO_InitStruct.Pull  = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
 	HAL_GPIO_Init(LCD_GPIO, &GPIO_InitStruct); 
 
@@ -734,8 +735,8 @@ unsigned char show_block3(int8_t x, int8_t y, int8_t x_now, int8_t line)
 
 void oled_camera_display()
 {
-	uint16_t i, j, shift;
-	unsigned char y, x;
+	uint16_t i, j, k, shift;
+	uint16_t y, x;
 	uint8_t data = 0;
 	//unsigned char disp[8][128];
 
@@ -755,17 +756,35 @@ void oled_camera_display()
 	//	{
 	//		data[j]=15*(sin(j*12.0/180.0*3.14159)+1);
 	//	}
-
-	for (y = 0; y < 8; y++)
+	i = 0;
+	for (y = 0; y < 7; y++)
 	{
 		LCD_WrCmd(0xb0 + y);
 		LCD_WrCmd(((0 & 0xf0) >> 4) | 0x10);
 		LCD_WrCmd(0 & 0x0f);
-		for (x = 0; x < 48; x++)
+
+		for (x = 0; x < 60; x++)
 		{
-			i = y * 16;
-			j = x * 1;
-			data = (uint8_t)camera_buffer[x*5][7-y];
+			uint8_t p_bit = 0;
+
+			
+
+			data = 0;
+			for (shift = 0; shift < 8; shift++)
+			{
+				if (x % 2 == 0)
+				{
+					p_bit = (camera_buffer[y * 32+shift*4][x/2] >> 7) & 0x01;
+				}
+				else {
+					p_bit = (camera_buffer[y * 32 + shift * 4][x/2] >> 3) & 0x01;
+				}
+
+				data |= p_bit <<shift;
+			}
+
+			//data = camera_buffer[x*5][(7-y)*5];
+			//data = 0xAA;
 			//data = __RBIT(data);
 			LCD_WrDat(~data);
 		}

@@ -12,7 +12,7 @@ HAL_StatusTypeDef pwm_init(void)
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	
-	gpio_init.Pin = GPIO_PIN_8;
+	gpio_init.Pin = GPIO_PIN_9 | GPIO_PIN_10;
 	gpio_init.Mode = GPIO_MODE_AF_PP;
 	gpio_init.Speed = GPIO_SPEED_FREQ_HIGH;
 	gpio_init.Alternate = GPIO_AF1_TIM1;
@@ -36,9 +36,13 @@ HAL_StatusTypeDef pwm_init(void)
 	oc_init.OCIdleState = TIM_OCIDLESTATE_RESET;
 	oc_init.Pulse = 0;
 	
-	HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_1);
-	set_pwm_val(TIM_CHANNEL_1, 200);
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_2);
+	HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_3);
+	//HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_1);
+	set_pwm_val(TIM_CHANNEL_2, 6000);
+	set_pwm_val(TIM_CHANNEL_3, 6000);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 	
 	
 	return state;

@@ -8,7 +8,7 @@ extern "C" {
 
 #include "stm32f4xx_hal.h"
 
-#define TWOchNum        (0x39)                    //二值化阈值
+#define TWOchNum        (0x70)                    //二值化阈值
 
 #define OV7725_ID        0x21
 #define OV7725_GAIN      0x00
@@ -161,9 +161,13 @@ extern "C" {
 #define OV7725_DSPAuto   0xAC
 
 
-#define CAMERA_W            80              //定义摄像头图像宽度,列
-#define CAMERA_H            60              //定义摄像头图像高度,行
+#define CAMERA_W            320              //定义摄像头图像宽度,列
+#define CAMERA_H            240              //定义摄像头图像高度,行
 #define CAMERA_SIZE         (CAMERA_W * CAMERA_H / 8)           //图像占用空间大小
+
+#define CAMERA_BUFFER_W		30
+#define CAMERA_BUFFER_H		240
+#define CAMERA_BUFFER_TYPE	uint8_t
 
 	void CAMERA_I2C_test();
 	void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi);

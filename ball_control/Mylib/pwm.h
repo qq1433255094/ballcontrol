@@ -10,8 +10,8 @@ extern "C" {
 #include "system_stm32f4xx.h"  
 
 
-#define PWM_freq	16000
-#define PWM_Period	400
+#define PWM_freq	200
+#define PWM_Period	20000
 //#define PWM_CLOCK 1000000
 #define PWM_CLOCK (PWM_freq*PWM_Period)
 	
