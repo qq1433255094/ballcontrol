@@ -169,7 +169,7 @@ extern "C" {
 #define CAMERA_BUFFER_H		240
 #define CAMERA_BUFFER_TYPE	uint8_t
 
-	void CAMERA_I2C_test();
+	void CAMERA_START();
 	void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi);
 	void DMA2_Stream1_IRQHandler(void);
 	void DCMI_IRQHandler(void);

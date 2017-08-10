@@ -1,4 +1,5 @@
 ﻿#include "ov7670.h"
+#include "os_task.h"
 
 #define CAMERA_WRITE_ADDR	0x42
 #define CAMERA_READ_ADDR	0x42
@@ -38,7 +39,10 @@
 I2C_HandleTypeDef  camera_I2c;
 static DCMI_HandleTypeDef hdcmi_camera;
 uint8_t test_val = 0;
+uint8_t Frame_Enable = 0;
 CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+CAMERA_BUFFER_TYPE camera_frame[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+CAMERA_BUFFER_TYPE camera_diff[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 
 void CAMERA_I2C_Init();
 void CAMERA_I2C_MspInit();
@@ -869,7 +873,7 @@ void BSP_CAMERA_Resume(void)
 }
 
 
-void CAMERA_I2C_test()
+void CAMERA_START()
 {
 	//CAMERA_I2C_Init();
 	//CAMERA_I2C_Write(0x12, 0x80);
@@ -989,7 +993,7 @@ void pix_handler()
 	{
 		return;
 	}
-	if (p > 4 || p < 35)
+	if (p > 4 && p < 35)
 	{
 		camera_buffer[h - 1][p-5] = GPIOC->IDR & 0x00ff;
 	}
@@ -1006,10 +1010,22 @@ uint32_t time;
 
 void vs_handler()
 {
+	uint16_t W, H;
 	hg = h;
 	h = 0;
 	p = 0;
 	v++;
+
+	for (H=0;H<240;H++)
+	{
+		for (W = 0; W < 30; W++)
+		{
+			//camera_diff[H][W] = camera_buffer[H][W]- camera_frame[H][W];
+			camera_frame[H][W] = camera_buffer[H][W];
+		}
+	}
+	//osThreadResume(os_ThreadHandle(CAMERA_CAL));
+	Frame_Enable = 1;
 	if (HAL_GetTick() -time >= 1000)
 	{
 		time = HAL_GetTick();

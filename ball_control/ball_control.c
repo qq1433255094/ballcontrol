@@ -66,10 +66,10 @@ int main(void)
 	GREED_LED_OFF();
 	//HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
 	OLED_Configuration();
-	CAMERA_I2C_test();
-	//uart4_init();
+	CAMERA_START();
+	uart4_init();
 	
-	//pwm_init();
+	pwm_init();
 	os_task_init();
 	os_task_start();
 	  /* We should never get here as control is now taken by the scheduler */

@@ -52,3 +52,15 @@ void set_pwm_val(uint32_t channel, uint32_t val)
 {
 	__HAL_TIM_SetCompare(&htim1, channel, (val > PWM_Period ? PWM_Period : val));
 }
+
+void pwm_out(uint32_t channel, int32_t val)
+{
+	int32_t ref = 6000, out_val;
+	out_val = ref + val;
+	if (out_val > 9000)
+		out_val = 9000;
+	else if (out_val < 3000)
+		out_val = 3000;
+
+	set_pwm_val(channel, out_val);
+}

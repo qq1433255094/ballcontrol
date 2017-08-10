@@ -23,7 +23,9 @@
 #define LCD_SDA_1  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_SET) //D1
 #define LCD_SDA_0  HAL_GPIO_WritePin(LCD_GPIO,LCD_SDA_PIN,GPIO_PIN_RESET)
 
-extern CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+extern CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W]; 
+extern CAMERA_BUFFER_TYPE camera_frame[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+extern CAMERA_BUFFER_TYPE camera_diff[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 
 const unsigned char F8X16[]=
 {
@@ -774,10 +776,10 @@ void oled_camera_display()
 			{
 				if (x % 2 == 0)
 				{
-					p_bit = (camera_buffer[y * 32+shift*4][x/2] >> 7) & 0x01;
+					p_bit = (camera_frame[y * 32+shift*4][x/2] >> 7) & 0x01;
 				}
 				else {
-					p_bit = (camera_buffer[y * 32 + shift * 4][x/2] >> 3) & 0x01;
+					p_bit = (camera_frame[y * 32 + shift * 4][x/2] >> 3) & 0x01;
 				}
 
 				data |= p_bit <<shift;

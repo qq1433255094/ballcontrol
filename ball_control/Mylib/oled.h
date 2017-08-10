@@ -9,10 +9,10 @@
 #include "stm32f4xx_hal.h"              // Keil::Device:STM32Cube HAL:Common
 #include "system_stm32f4xx.h"    
 
-#define LCD_RST_PIN GPIO_PIN_0
-#define LCD_DC_PIN  GPIO_PIN_1
-#define LCD_SCL_PIN GPIO_PIN_2
-#define LCD_SDA_PIN GPIO_PIN_3
+#define LCD_SCL_PIN GPIO_PIN_0
+#define LCD_RST_PIN GPIO_PIN_1
+#define LCD_SDA_PIN GPIO_PIN_2
+#define LCD_DC_PIN  GPIO_PIN_3
 #define LCD_GPIO    GPIOD
 #define __LCD_GPIO_CLK_ENABLE() __GPIOD_CLK_ENABLE()
 

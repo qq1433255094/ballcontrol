@@ -17,6 +17,7 @@ extern "C" {
 	
 HAL_StatusTypeDef pwm_init(void);
 void set_pwm_val(uint32_t channel, uint32_t val);
+void pwm_out(uint32_t channel, int32_t val);
 	
 #ifdef __cplusplus
 }
