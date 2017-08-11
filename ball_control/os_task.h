@@ -39,6 +39,13 @@ extern "C" {
 #include "oled.h"
 #include "pwm.h"
 
+	struct Point
+	{
+		int16_t x;
+		int16_t y;
+	};
+
+
 	void os_task_init(void);
 	void os_task_start(void);
 
