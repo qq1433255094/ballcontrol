@@ -31,8 +31,7 @@
 #include "os_task.h"
 
 void setSystemClock(void);
-
-
+extern UART_HandleTypeDef huart2;
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -69,7 +68,9 @@ int main(void)
 	tim3_init();
 	OLED_Configuration();
 	CAMERA_START();
-	uart4_init();
+	//uart2_Config(9600);
+	//uart4_init();
+	usart3_init();
 	
 	pwm_init();
 	os_task_init();
@@ -84,6 +85,28 @@ void SysTick_Handler(void)
 	HAL_IncTick();
 	osSystickHandler();
 }
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+
+	//HAL_UART_Receive_DMA(&huart2, Rec_data, 10);
+	if (huart->Instance == USART2)
+	{
+		//HAL_UART_Receive_IT(huart, huart->pRxBuffPtr, 1);
+		UART2_Handler();
+	}
+	else if (huart->Instance == USART3)
+	{
+		//HAL_UART_Receive_IT(huart, huart->pRxBuffPtr, 1);
+		UART3_Handler();
+	}
+
+}
+
+
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) //5ms
 {

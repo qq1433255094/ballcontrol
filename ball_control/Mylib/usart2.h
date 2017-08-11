@@ -32,9 +32,13 @@
 #ifndef  __USART2_H_
 #define  __USART2_H_
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 #include "stm32f4xx.h"                  // Device header
 #include "stm32f4xx_hal.h"              // Keil::Device:STM32Cube HAL:Common
@@ -44,7 +48,7 @@ extern "C" {
 
 	void uart2_Config(uint32_t bRate);
 	void Send_data(uint8_t *pData);
-
+	void UART2_Handler(void);
 
 #define COUNTBUFF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 

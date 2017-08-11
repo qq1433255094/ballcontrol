@@ -7,6 +7,9 @@ extern button_HandleTypeDef button1;
 extern CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 extern CAMERA_BUFFER_TYPE camera_frame[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 extern CAMERA_BUFFER_TYPE camera_diff[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+extern uint8_t page_fir[];
+extern uint8_t page_sec[];
+
 
 int Frame;
 #pragma region ALL_DEFINE
@@ -59,10 +62,13 @@ os_exec(TEST) {
 	}
 }
 
+uint8_t count;
+
 os_exec(KEY) {
 	(void)argument;
 	for (; ; )
 	{
+		
 		if (button1.state == PLUSE)
 		{
 			osThreadResume(os_ThreadHandle(CONTROL));

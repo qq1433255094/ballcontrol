@@ -5,9 +5,9 @@
  extern "C" {
 #endif
 	 
-//#define LED_1HZ  100
-//#define LED_5HZ  20
-//#define LED_10HZ 10
+
+#define JUMP_FIRST()  Send_data(page_fir)
+#define JUMP_SECOND() Send_data(page_sec)
 
 
 void tim3_init(void);

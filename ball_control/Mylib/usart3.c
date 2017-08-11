@@ -3,10 +3,10 @@
 #include "can2.h"
 
 UART_HandleTypeDef huart3;
-uint8_t receive3[10], transmit3[10];
-
-struct ROLL roll;
-short buffer[7];
+uint8_t receive3[20], transmit3[20];
+uint8_t page_fir[] = "page 2xxx";
+uint8_t page_sec[] = "page 3xxx";
+uint8_t area[4];
 
 
 
@@ -20,12 +20,17 @@ void usart3_init(void)
 {
 	GPIO_InitTypeDef gpio_init;
 
-	roll.offset = 0;
-	roll.len = 14;
-	roll.p = (char *)buffer;
 
 	HAL_NVIC_SetPriority(USART3_IRQn, 4, 0);
 	HAL_NVIC_EnableIRQ(USART3_IRQn);
+
+	page_fir[6] = 0xff;
+	page_fir[7] = 0xff;
+	page_fir[8] = 0xff;
+
+	page_sec[6] = 0xff;
+	page_sec[7] = 0xff;
+	page_sec[8] = 0xff;
 
 	__HAL_RCC_USART3_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -37,7 +42,7 @@ void usart3_init(void)
 	gpio_init.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(GPIOB, &gpio_init);
 
-	huart3.Init.BaudRate = 115200;
+	huart3.Init.BaudRate = 9600;
 	huart3.Init.WordLength = USART_WORDLENGTH_8B;
 	huart3.Init.StopBits = USART_STOPBITS_1;
 	huart3.Init.Parity = USART_PARITY_NONE;
@@ -45,37 +50,9 @@ void usart3_init(void)
 	huart3.Instance = USART3;
 
 	HAL_UART_Init(&huart3);
-	HAL_UART_Receive_IT(&huart3, receive3, 1);
+	HAL_UART_Receive_IT(&huart3, receive3, 4);
 }
 
-/**
-* @brief ´®¿Ú3·¢ËÍ×Ö·û´®
-* @param *b£º×Ö·û´®Êý×éÖ¸Õë
-* @note none
-* @retval none
-*/
-
-void Insert(struct ROLL *p, char num)
-{
-	p->p[p->offset++] = num;
-	if (p->offset == p->len)
-	{
-		p->offset = 0;
-	}
-}
-
-short Read(struct ROLL *p, char num)
-{
-	char shift = p->offset;
-	shift += num;
-
-	if (shift >= p->len)
-	{
-		shift -= p->len;
-	}
-
-	return p->p[shift];
-}
 
 void usart3_send(const char *b)
 {
@@ -85,19 +62,20 @@ void usart3_send(const char *b)
 
 void USART3_IRQHandler(void)
 {
-	huart3.pRxBuffPtr = receive3;
+	
 	HAL_UART_IRQHandler(&huart3);
 }
 
 
-
+int8_t c;
 void UART3_Handler(void)
 {
-	uint8_t have_receive = 0;
+	for (c = 0; c < 4; c++)
+	{
+		area[c] = receive3[c];
+	}
 
-	Insert(&roll, receive3[0]);
-
-	HAL_UART_Receive_IT(&huart3, huart3.pRxBuffPtr, 1);
+	HAL_UART_Receive_IT(&huart3, receive3, 4);
 }
 
 

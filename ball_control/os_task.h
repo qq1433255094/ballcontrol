@@ -26,7 +26,7 @@ extern "C" {
 #include <../CMSIS_RTOS/cmsis_os.h>
 #include "ov7670.h"
 #include "uart4.h"
-#include "usart6.h"
+#include "usart2.h"
 #include "usart3.h"
 #include "tim3.h"
 #include "tim4.h"
