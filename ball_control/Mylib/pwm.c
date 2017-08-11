@@ -39,8 +39,8 @@ HAL_StatusTypeDef pwm_init(void)
 	HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_2);
 	HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_3);
 	//HAL_TIM_PWM_ConfigChannel(&htim1, &oc_init, TIM_CHANNEL_1);
-	set_pwm_val(TIM_CHANNEL_2, 6000);
-	set_pwm_val(TIM_CHANNEL_3, 6000);
+	set_pwm_val(TIM_CHANNEL_2, 6000-200);
+	set_pwm_val(TIM_CHANNEL_3, 6000-200);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
 	
@@ -55,7 +55,7 @@ void set_pwm_val(uint32_t channel, uint32_t val)
 
 void pwm_out(uint32_t channel, int32_t val)
 {
-	int32_t ref = 6000, out_val;
+	int32_t ref = 6000-200, out_val;
 	out_val = ref + val;
 	if (out_val > 9000)
 		out_val = 9000;

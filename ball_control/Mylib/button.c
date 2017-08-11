@@ -31,9 +31,9 @@ uint8_t button_read(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
   uint8_t val = 0;
 
   if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_RESET) {
-    val =0;
+    val =1;
   }
-	else val =1;
+	else val =0;
 
   return val;
 }

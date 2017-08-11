@@ -142,13 +142,14 @@ void oled_delay_ms(unsigned int t)
 
 void oled_delay_us(unsigned int t)
 {
-	int i=0;
-	for( i=0;i<t;i++)
-	{
-		int a=40;
-	//	int a=0;
-		while(a--);
-	}
+	//int i=0;
+	//int a = 40;
+	//for( i=0;i<t;i++)
+	//{
+	//	
+	////	int a=0;
+	//	while(a--);
+	//}
 	////i++;
 }
 

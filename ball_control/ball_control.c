@@ -65,6 +65,8 @@ int main(void)
 	BLUE_LED_OFF();
 	GREED_LED_OFF();
 	//HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
+	button_init();
+	tim3_init();
 	OLED_Configuration();
 	CAMERA_START();
 	uart4_init();
@@ -81,6 +83,18 @@ void SysTick_Handler(void)
 {
 	HAL_IncTick();
 	osSystickHandler();
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) //5ms
+{
+	if (htim->Instance == TIM3)
+	{
+		TIM3_Handler();
+	}
+	else if (htim->Instance == TIM4)
+	{
+		TIM4_Handler();
+	}
 }
 
 void setSystemClock(void)
