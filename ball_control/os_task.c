@@ -7,12 +7,28 @@
 #define MOVE_XY 2
 #define MOVE_XYR 3
 
+#define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 16 Kbytes */
+#define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08004000) /* Base @ of Sector 1, 16 Kbytes */
+#define ADDR_FLASH_SECTOR_2     ((uint32_t)0x08008000) /* Base @ of Sector 2, 16 Kbytes */
+#define ADDR_FLASH_SECTOR_3     ((uint32_t)0x0800C000) /* Base @ of Sector 3, 16 Kbytes */
+#define ADDR_FLASH_SECTOR_4     ((uint32_t)0x08010000) /* Base @ of Sector 4, 64 Kbytes */
+#define ADDR_FLASH_SECTOR_5     ((uint32_t)0x08020000) /* Base @ of Sector 5, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_6     ((uint32_t)0x08040000) /* Base @ of Sector 6, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_7     ((uint32_t)0x08060000) /* Base @ of Sector 7, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_8     ((uint32_t)0x08080000) /* Base @ of Sector 8, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_9     ((uint32_t)0x080A0000) /* Base @ of Sector 9, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
+
+#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
+
 extern UART_HandleTypeDef huart4;
 extern uint8_t Frame_Enable;
 extern button_HandleTypeDef button1;
 extern CAMERA_BUFFER_TYPE camera_buffer[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 extern CAMERA_BUFFER_TYPE camera_frame[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
 extern CAMERA_BUFFER_TYPE camera_diff[CAMERA_BUFFER_H][CAMERA_BUFFER_W];
+
 
 struct Point ball_targer[10] = 
 {
@@ -52,7 +68,7 @@ void os_task_init(void)
 void os_task_start(void)
 {
 	/* Start scheduler */
-	osThreadSuspend(os_ThreadHandle(TEST));
+	//osThreadSuspend(os_ThreadHandle(TEST));
 	osThreadSuspend(os_ThreadHandle(CONTROL));
 	osKernelStart();
 }
@@ -221,15 +237,137 @@ void pro_4()
 
 }
 
+FLASH_EraseInitTypeDef EraseInitStruct;
+uint32_t SectorError = 0, FlashAddress = 0;
+int16_t test1, test2;
+
+static uint32_t GetSector(uint32_t Address)
+{
+	uint32_t sector = 0;
+
+	if ((Address < ADDR_FLASH_SECTOR_1) && (Address >= ADDR_FLASH_SECTOR_0))
+	{
+		sector = FLASH_SECTOR_0;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_2) && (Address >= ADDR_FLASH_SECTOR_1))
+	{
+		sector = FLASH_SECTOR_1;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_3) && (Address >= ADDR_FLASH_SECTOR_2))
+	{
+		sector = FLASH_SECTOR_2;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_4) && (Address >= ADDR_FLASH_SECTOR_3))
+	{
+		sector = FLASH_SECTOR_3;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_5) && (Address >= ADDR_FLASH_SECTOR_4))
+	{
+		sector = FLASH_SECTOR_4;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_6) && (Address >= ADDR_FLASH_SECTOR_5))
+	{
+		sector = FLASH_SECTOR_5;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_7) && (Address >= ADDR_FLASH_SECTOR_6))
+	{
+		sector = FLASH_SECTOR_6;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_8) && (Address >= ADDR_FLASH_SECTOR_7))
+	{
+		sector = FLASH_SECTOR_7;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_9) && (Address >= ADDR_FLASH_SECTOR_8))
+	{
+		sector = FLASH_SECTOR_8;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_10) && (Address >= ADDR_FLASH_SECTOR_9))
+	{
+		sector = FLASH_SECTOR_9;
+	}
+	else if ((Address < ADDR_FLASH_SECTOR_11) && (Address >= ADDR_FLASH_SECTOR_10))
+	{
+		sector = FLASH_SECTOR_10;
+	}
+	else /* (Address < FLASH_END_ADDR) && (Address >= ADDR_FLASH_SECTOR_11) */
+	{
+		sector = FLASH_SECTOR_11;
+	}
+
+	return sector;
+}
+
+
+static uint32_t GetSectorSize(uint32_t Sector)
+{
+	uint32_t sectorsize = 0x00;
+
+	if ((Sector == FLASH_SECTOR_0) || (Sector == FLASH_SECTOR_1) || (Sector == FLASH_SECTOR_2) || (Sector == FLASH_SECTOR_3))
+	{
+		sectorsize = 16 * 1024;
+	}
+	else if (Sector == FLASH_SECTOR_4)
+	{
+		sectorsize = 64 * 1024;
+	}
+	else
+	{
+		sectorsize = 128 * 1024;
+	}
+	return sectorsize;
+}
+
+void save_point()
+{
+	HAL_FLASH_Unlock();
+
+	/* Fill EraseInit structure*/
+	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+	EraseInitStruct.Sector = GetSector(FLASH_USER_START_ADDR);
+	EraseInitStruct.NbSectors = 1;
+	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK)
+	{
+		;
+	}
+
+	__HAL_FLASH_DATA_CACHE_DISABLE();
+	__HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+
+	__HAL_FLASH_DATA_CACHE_RESET();
+	__HAL_FLASH_INSTRUCTION_CACHE_RESET();
+
+	__HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+	__HAL_FLASH_DATA_CACHE_ENABLE();
+
+	FlashAddress = FLASH_USER_START_ADDR;
+
+	for (int8_t i = 0; i < 10; i++)
+	{
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, FlashAddress, ball_targer[i].x);
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, FlashAddress + 2, ball_targer[i].y);
+		FlashAddress += 4;
+	}
+	HAL_FLASH_Lock();
+
+}
+
+void read_point()
+{
+	FlashAddress = FLASH_USER_START_ADDR;
+
+	for (int8_t i = 0; i < 10; i++)
+	{
+		ball_targer[i].x = *(__IO int16_t*)(FlashAddress);
+		ball_targer[i].y = *(__IO int16_t*)(FlashAddress + 2);
+		FlashAddress += 4;
+	}
+}
 
 os_exec(TEST) {
 	(void)argument;
 	for (; ; )
 	{
-		
-		
-		base_3();
-
 
 		osThreadSuspend(os_ThreadHandle(TEST));
 	}
