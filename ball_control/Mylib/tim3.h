@@ -6,8 +6,7 @@
 #endif
 	 
 
-#define JUMP_FIRST()  Send_data(page_fir)
-#define JUMP_SECOND() Send_data(page_sec)
+
 
 
 void tim3_init(void);

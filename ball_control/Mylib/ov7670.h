@@ -8,7 +8,7 @@ extern "C" {
 
 #include "stm32f4xx_hal.h"
 
-#define TWOchNum        (0x70)                    //二值化阈值
+#define TWOchNum        (0x60)                    //二值化阈值
 
 #define OV7725_ID        0x21
 #define OV7725_GAIN      0x00

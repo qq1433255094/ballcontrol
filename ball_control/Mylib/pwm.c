@@ -55,14 +55,19 @@ void set_pwm_val(uint32_t channel, uint32_t val)
 
 void pwm_out(uint32_t channel, int32_t val)
 {
-	int32_t ref = 6000-200, out_val;
+	int32_t ref = 6000, out_val;
+	if (channel == TIM_CHANNEL_2)
+		ref = 6000+200;
+	else if (channel == TIM_CHANNEL_3)
+		ref = 6000-300;
+
 	if (val>0)
 	{
-		val += 40;
+		val += 10;
 	}
 	if (val < 0)
 	{
-		val -= 40;
+		val -= 10;
 	}
 	out_val = ref + val;
 	if (out_val > 9000)

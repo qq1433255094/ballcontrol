@@ -10,7 +10,8 @@ extern "C" {
 #include <string.h>
 #include <stdarg.h>
 
-
+#define JUMP_FIRST()  usart3_send(page_fir)
+#define JUMP_SECOND() usart3_send(page_sec)
 
 	struct ROLL
 	{

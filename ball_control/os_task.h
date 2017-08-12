@@ -18,6 +18,8 @@
 #define os_ThreadHandle(name)			name##ThreadHandle
 #define os_exec(name)					static void name##_Thread(void const * argument)
 
+#define LOOP(n)							for(int32_t loop_times=0;loop_times<n;loop_times++)
+
 #ifdef __cplusplus
 extern "C" {
 #endif

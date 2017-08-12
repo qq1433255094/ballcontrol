@@ -6,7 +6,7 @@ UART_HandleTypeDef huart3;
 uint8_t receive3[20], transmit3[20];
 uint8_t page_fir[] = "page 2xxx";
 uint8_t page_sec[] = "page 3xxx";
-uint8_t area[4];
+uint8_t area[4] = {255,255,255,255};
 
 
 
