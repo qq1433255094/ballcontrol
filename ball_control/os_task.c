@@ -34,7 +34,9 @@ extern uint8_t area[4];
 extern UART_HandleTypeDef huart3;
 extern uint8_t receive3[20], transmit3[20];
 
+uint8_t test_over = 1;
 uint8_t receive_over = 1;
+int16_t out_y = 0, out_x = 0;
 
 struct Point ball_targer[10] = 
 {
@@ -48,7 +50,7 @@ struct Point ball_fix[10] =
 {
 	{ 0,0 },
 	{ 5,-5 },{ 5,-5 },{ 10,0 },
-	{ 5,5 },{ 5,5 },{ 5,0 },
+	{ 5,-5 },{ 5,5 },{ 5,0 },
 	{ 5,0 },{ 0,-10 },{ -10,-5 }
 };
 
@@ -155,11 +157,36 @@ void reset_para(float p, float d)
 	KD = d;
 }
 
+void clear_out()
+{
+	out_y = 0;
+	out_x = 0;
+}
+
+void move_to_set(int32_t x, int32_t y, int32_t n, uint32_t delay)
+{
+	float inc = 1.0 / n;
+	int32_t dx = x - ball_setx;
+	int32_t dy = y - ball_sety;
+
+	for (int16_t i=0;i<n-1;i++)
+	{
+		ball_setx += inc*dx;
+		ball_sety += inc*dy;
+		osDelay(delay);
+	}
+	ball_setx = x;
+	ball_sety = y;
+	osDelay(delay);
+}
+
 void base_1() {
 	//1
 	//reset_para(12, 30);
-	ball_sety = ball_targer[2].y;
-	ball_setx = ball_targer[2].x;
+	ball_sety = ball_targer[2].y-5;
+	ball_setx = ball_targer[2].x+5;
+	clear_out();
+	osThreadResume(os_ThreadHandle(CONTROL));
 	osDelay(5000);
 }
 
@@ -168,6 +195,8 @@ void base_2() {
 	//reset_para(12, 30);
 	ball_sety = ball_targer[1].y;
 	ball_setx = ball_targer[1].x;
+	clear_out();
+	osThreadResume(os_ThreadHandle(CONTROL));
 
 	move_dis(MOVE_XY, 10, 8, 500);
 
@@ -181,6 +210,8 @@ void base_3() {
 	//reset_para(12, 30);
 	ball_sety = ball_targer[1].y;
 	ball_setx = ball_targer[1].x;
+	clear_out();
+	osThreadResume(os_ThreadHandle(CONTROL));
 
 	move_dis(MOVE_Y, 5, 15, 300);
 
@@ -201,7 +232,8 @@ void base_4() {
 	//reset_para(12, 35);
 	ball_sety = ball_targer[1].y;
 	ball_setx = ball_targer[1].x;
-
+	clear_out();
+	osThreadResume(os_ThreadHandle(CONTROL));
 	move_dis(MOVE_XY, 10, 6, 400);
 	move_dis(MOVE_Y, 10, 8, 400);
 	osDelay(1000);
@@ -217,10 +249,11 @@ void base_4() {
 
 void pro_1()
 {
-	reset_para(12, 35);
+	//reset_para(12, 35);
 	ball_sety = ball_targer[1].y;
 	ball_setx = ball_targer[1].x;
-
+	clear_out();
+	osThreadResume(os_ThreadHandle(CONTROL));
 	move_dis(MOVE_X, 20, 4, 1000);
 
 	ball_sety = ball_targer[2].y-5;
@@ -245,6 +278,7 @@ void pro_2()
 {
 	int16_t A, B, C, D;
 	uint32_t time = HAL_GetTick();
+	
 	osThreadSuspend(os_ThreadHandle(CONTROL));
 	while (area[0]==255 )//&& HAL_GetTick()-time < 120000 )
 	{
@@ -261,25 +295,18 @@ void pro_2()
 		receive_over = 1;
 		HAL_UART_Receive_IT(&huart3, receive3, 4);
 
-		osThreadResume(os_ThreadHandle(CONTROL));
 
 		//reset_para(8, 30);
+		ball_setx = ball_x;
+		ball_sety = ball_y;
+		clear_out();
 
-		ball_setx = ball_targer[A].x + ball_fix[A].x;
-		ball_sety = ball_targer[A].y + ball_fix[A].y;
-		osDelay(5000);
+		osThreadResume(os_ThreadHandle(CONTROL));
 
-		ball_setx = ball_targer[B].x + ball_fix[B].x;
-		ball_sety = ball_targer[B].y + ball_fix[B].y;
-		osDelay(5000);
-
-		ball_setx = ball_targer[C].x + ball_fix[C].x;
-		ball_sety = ball_targer[C].y + ball_fix[C].y;
-		osDelay(5000);
-
-		ball_setx = ball_targer[D].x + ball_fix[D].x;
-		ball_sety = ball_targer[D].y + ball_fix[D].y;
-		osDelay(5000);
+		move_to_set(ball_targer[A].x + ball_fix[A].x, ball_targer[A].y + ball_fix[A].y, 5, 800);
+		move_to_set(ball_targer[B].x + ball_fix[B].x, ball_targer[B].y + ball_fix[B].y, 5, 800);
+		move_to_set(ball_targer[C].x + ball_fix[C].x, ball_targer[C].y + ball_fix[C].y, 5, 800);
+		move_to_set(ball_targer[D].x + ball_fix[D].x, ball_targer[D].y + ball_fix[D].y, 5, 800);
 
 		//reset_para(12, 30);
 	}
@@ -291,6 +318,9 @@ void pro_3()
 	LOOP(3) {
 		ball_setx = (ball_targer[5].x + ball_targer[4].x) / 2;
 		ball_sety = ball_targer[5].y;
+
+		clear_out();
+		osThreadResume(os_ThreadHandle(CONTROL));
 		osDelay(3000);
 
 		ball_setx = ball_targer[5].x;
@@ -463,10 +493,11 @@ void read_point()
 
 os_exec(TEST) {
 	(void)argument;
-	
+
 	for (; ; )
 	{
 		time_e = HAL_GetTick();
+		test_over = 0;
 		switch (exec_task)
 		{
 		case 0:base_1(); JUMP_FIRST();
@@ -489,6 +520,7 @@ os_exec(TEST) {
 			break;
 		}
 
+		test_over = 1;
 		osThreadSuspend(os_ThreadHandle(CONTROL));
 		pwm_out(TIM_CHANNEL_2, 0);
 		pwm_out(TIM_CHANNEL_3, 0);
@@ -507,7 +539,8 @@ os_exec(DISPLAY) {
 		//osDelay(5000);
 		GREED_LED_TOGGLE();
 		//if (Frame % 4 == 0)
-		//exec_time = HAL_GetTick() - time_e;
+		if (test_over==0)
+			exec_time = HAL_GetTick() - time_e+1;
 		oled_camera_display();
 		OLED_PrintN(64, 0, "ok", 0);
 		OLED_PrintN(64, 2, "x ", ball_x);
@@ -539,10 +572,10 @@ os_exec(KEY) {
 			area[0] = 255;
 
 			osThreadResume(os_ThreadHandle(TEST));
-			if (exec_task != 5)
-			{
-				osThreadResume(os_ThreadHandle(CONTROL));
-			}
+			//if (exec_task != 5)
+			//{
+			//	osThreadResume(os_ThreadHandle(CONTROL));
+			//}
 			
 			HAL_UART_Receive_IT(&huart3, receive3, 4);
 		}
@@ -646,7 +679,7 @@ os_exec(CAMERA_CAL) {
 	}
 }
 
-int16_t out_y = 0, out_x = 0;
+
 
 os_exec(CONTROL) {
 	(void)argument;
@@ -669,7 +702,7 @@ os_exec(CONTROL) {
 
 		if (fabs(dy) > 30)
 		{
-			pid_y.Kp = 8;
+			pid_y.Kp = 9;
 			pid_y.Ki = 0;
 			pid_y.Kd = 0;
 			arm_pid_init_f32(&pid_y, 1);
@@ -693,7 +726,7 @@ os_exec(CONTROL) {
 
 		if (fabs(dx) > 30)
 		{
-			pid_x.Kp = 6;
+			pid_x.Kp = 9;
 			pid_x.Ki = 0;
 			pid_x.Kd = 0;
 			arm_pid_init_f32(&pid_x, 1);
